@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <style>
+        @-moz-document url-prefix() {
+            @font-face {
+                font-family: '-webkit-standard';
+                src: url('nintendo_udsg-r_std_003.ttf');
+            }
+        }
+
+        body {
+            background: black;
+        }
+
+        .ok-cancel-dialog {
+            background-color: #464646;
+            color: white;
+            text-align: center;
+            font-family: '-webkit-standard';
+            width: 770px;
+            height: 290px;
+            border-spacing: 0px;
+            font-size: 24px;
+            border-radius: 5px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .dialog-text {
+            font-size: 24px;
+        }
+
+        .dialog-button {
+            color: #00ffc7;
+            height: 70px;
+            border-top: 2px solid #676767;
+            user-select: none;
+            width: 50%;
+        }
+
+        .dialog-button:focus {
+            box-shadow: 0 0 2px 2px #2c95c4, inset 0 0 2px 2px #2c95c4, 0 0 2px 2px #2c95c4, inset 0 0 2px 2px #2c95c4, 0 0 2px 2px #2c95c4, inset 0 0 2px 2px #2c95c4, 0 0 2px 2px #2c95c4, inset 0 0 2px 2px #2c95c4;
+            border: 0px;
+            z-index: 1;
+            position: relative;
+            border-radius: 3px;
+        }
+
+        .dialog-button:active {
+            background-color: #3c595d;
+        }
+
+        .ok-cancel-dialog td:not(:first-child) { border-left:2px solid #676767; };
+        .ok-cancel-dialog td:not(:last-child) { border-right:2px solid #676767; };
+    </style>
+</head>
+<body>
+    <table class="ok-cancel-dialog">
+        <tr>
+            <td class="dialog-text" colspan="2">{{ text }}</td>
+        </tr>
+        <tr>
+            <td class="dialog-button" onclick="location.href='http://localhost/left';" style="cursor:pointer;">{{ left_button }}</td>
+            <td class="dialog-button" onclick="location.href='http://localhost/right';" style="cursor:pointer;">{{ right_button }}</td>
+        </tr>
+    </table>
+</body>
+</html>
