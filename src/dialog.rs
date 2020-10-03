@@ -3,6 +3,7 @@ use ramhorns::{Template, Content};
 
 #[derive(Content)]
 pub struct Dialog {
+    #[md]
     text: String,
     left_button: String,
     right_button: String,
@@ -45,9 +46,9 @@ impl Dialog {
         let tpl = Template::new(include_str!("templates/dialog.html")).unwrap();
 
         let response = Webpage::new()
-            .background(crate::Background::BlurredScreenshot)
+            .background(Background::BlurredScreenshot)
             .file("index.html", &tpl.render(self))
-            .boot_display(crate::BootDisplay::BlurredScreenshot)
+            .boot_display(BootDisplay::BlurredScreenshot)
             .open()
             .unwrap();
 
