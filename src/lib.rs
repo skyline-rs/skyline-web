@@ -50,6 +50,7 @@ pub struct Webpage<'a> {
     files: HashMap<&'a str, &'a [u8]>,
     dir: Option<&'a Path>,
     show: Option<&'a str>,
+    htdocs_dir: Option<&'a str>,
     background: OfflineBackgroundKind,
     boot_display: OfflineBootDisplayKind,
     javascript: bool,
@@ -65,6 +66,7 @@ impl<'a> Default for Webpage<'a> {
             files: HashMap::new(),
             dir: None,
             show: None,
+            htdocs_dir: None,
             background: OfflineBackgroundKind::Default,
             boot_display: OfflineBootDisplayKind::Default,
             javascript: true,
@@ -165,12 +167,22 @@ impl<'a> Webpage<'a> {
         self
     }
 
+    pub fn htdocs_dir<S>(&mut self, path: &'a S) -> &mut Self
+        where S: AsRef<str> + ?Sized + 'a
+    {
+        self.htdocs_dir = Some(path.as_ref());
+
+        self
+    }
+
     pub fn open(&mut self) -> Result<PageResult, OsError> {
         let program_id = get_program_id();
 
+        let htdocs_dir = self.htdocs_dir.unwrap_or("temp");
+
         let folder_path = Path::new("sd:/atmosphere/contents")
             .join(&format!("{:016X}", program_id))
-            .join("manual_html/html-document/temp.htdocs/");
+            .join(&format!("manual_html/html-document/{}.htdocs/", htdocs_dir));
 
         if let Some(dir) = self.dir {
             // Copy dir to temp.htdocs
@@ -183,7 +195,8 @@ impl<'a> Webpage<'a> {
         }
 
         let mut args = new_boxed_html_page_arg(format!(
-            "temp.htdocs/{}",
+            "{}.htdocs/{}",
+            htdocs_dir,
             self.show.unwrap_or("index.html")
         ));
         
