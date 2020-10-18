@@ -95,6 +95,18 @@ impl<'a> Webpage<'a> {
         self
     }
 
+    pub fn files<Str, Data, Arr>(&mut self, files: &'a Arr) -> &mut Self
+    where Str: AsRef<str> + Sized + 'a,
+          Data: AsRef<[u8]> + Sized + 'a,
+          Arr: AsRef<[(Str, Data)]> + ?Sized + 'a
+    {
+        for (name, data) in files.as_ref().into_iter() {
+            self.files.insert(name.as_ref(), data.as_ref());
+        }
+        
+        self
+    }
+
     pub fn with_dir<P>(&mut self, dir_path: &'a P) -> &mut Self
         where P: AsRef<Path> + ?Sized + 'a
     {
