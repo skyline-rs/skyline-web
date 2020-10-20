@@ -239,4 +239,6 @@ fn new_boxed_html_page_arg<T>(page_path: T) -> Box<ShowOfflineHtmlPageArg>
 
 mod dialog;
 pub use dialog::*;
+mod dialog_ok;
+pub use dialog_ok::*;
 
