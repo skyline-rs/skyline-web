@@ -10,7 +10,17 @@ use std::collections::HashMap;
 use skyline::info::get_program_id;
 
 use nnsdk::web::*;
-pub use nnsdk::web::{OfflineBackgroundKind as Background, OfflineBootDisplayKind as BootDisplay};
+use nnsdk::web::offlinewebsession::*;
+use skyline::nn::os::{ SystemEventType, SystemEventClearMode, TryWaitSystemEvent };
+
+pub use nnsdk::web::{
+    WebSessionBootMode as Visibility,
+    OfflineBackgroundKind as Background,
+    OfflineBootDisplayKind as BootDisplay,
+    offlinewebsession::{
+        OfflineWebSession,
+    }
+};
 
 pub struct PageResult {
     ret: Box<OfflineHtmlPageReturnValue>,
@@ -175,7 +185,7 @@ impl<'a> Webpage<'a> {
         self
     }
 
-    pub fn open(&mut self) -> Result<PageResult, OsError> {
+    fn into_page_args(&mut self) -> Result<Box<ShowOfflineHtmlPageArg>, OsError> {
         let program_id = get_program_id();
 
         let htdocs_dir = self.htdocs_dir.unwrap_or("temp");
@@ -208,6 +218,27 @@ impl<'a> Webpage<'a> {
         args.enable_boot_loading_icon(self.boot_icon);
         args.enable_web_audio(self.web_audio);
 
+        Ok(args)
+    }
+    
+    pub fn open_session(&mut self, boot_mode: Visibility) -> OfflineWebSession {
+        let mut args = self.into_page_args().unwrap();
+        args.enable_javascript(true);
+        args.set_boot_mode(boot_mode);
+
+        let session = OfflineWebSession::new();
+        let system_evt = SystemEventType::new(SystemEventClearMode::Manual);
+
+        unsafe {
+            Start(&session, &&system_evt, &args);
+            TryWaitSystemEvent(&system_evt);
+         }
+
+         session
+    }
+
+    pub fn open(&mut self) -> Result<PageResult, OsError> {
+        let mut args = self.into_page_args().unwrap();
         let mut page_result = PageResult::new();
 
         let result = unsafe  { ShowOfflineHtmlPage(page_result.as_mut(), args.as_mut()) };
