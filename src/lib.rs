@@ -32,7 +32,7 @@ impl WebSession {
     pub fn try_recv(&self) -> Option<String> {
         let mut buffer = vec![0u8;0x10000];
     
-        if let Some(size) = self.inner_recv(buffer) {
+        if let Some(size) = self.inner_recv(&mut buffer) {
             if size != 0 {
                 buffer.truncate(size);
                 buffer.shrink_to_fit();
@@ -45,7 +45,7 @@ impl WebSession {
         }
     }
 
-    fn inner_recv<T: AsMut<[u8]>>(&self, buffer: T) -> Option<usize> {        
+    fn inner_recv<T: AsMut<[u8]>>(&self, buffer: &mut T) -> Option<usize> {        
         let buffer = buffer.as_mut();
         let mut out_size = 0;
         
