@@ -22,6 +22,53 @@ pub use nnsdk::web::{
     }
 };
 
+pub struct WebSession(OfflineWebSession);
+
+impl WebSession {
+    pub fn recv(&self) {
+
+    }
+
+    pub fn try_recv(&self) -> Option<String> {
+        let mut buffer = vec![0u8;0x10000];
+    
+        if let Some(size) = self.inner_recv(buffer) {
+            if size != 0 {
+                buffer.truncate(size);
+                buffer.shrink_to_fit();
+                String::from_utf8(buffer).map(|string| string).ok()
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    fn inner_recv<T: AsMut<[u8]>>(&self, buffer: T) -> Option<usize> {        
+        let buffer = buffer.as_mut();
+        let mut out_size = 0;
+        
+        unsafe { 
+            if skyline::nn::web::offlinewebsession::TryReceiveContentMessage(&self.0, &mut out_size, buffer.as_mut_ptr(), buffer.len()) != false {
+                Some(out_size)
+            } else {
+                None
+            }
+        }
+    }
+
+    pub fn show(&self) {
+        unsafe { Appear(&self.0) };
+    }
+
+    pub fn wait_for_exit(&self) -> PageResult {
+        let return_value = PageResult::new();
+        unsafe { WaitForExit(&self.0, return_value.as_ref()) };
+        return_value
+    }
+}
+
 pub struct PageResult {
     ret: Box<OfflineHtmlPageReturnValue>,
 }
@@ -47,6 +94,12 @@ impl PageResult {
 
     pub fn get_exit_reason(&self) -> OfflineExitReason {
         self.ret.get_exit_reason()
+    }
+}
+
+impl AsRef<OfflineHtmlPageReturnValue> for PageResult {
+    fn as_ref(&self) -> &OfflineHtmlPageReturnValue {
+        &self.ret
     }
 }
 
@@ -221,9 +274,10 @@ impl<'a> Webpage<'a> {
         Ok(args)
     }
     
-    pub fn open_session(&mut self, boot_mode: Visibility) -> OfflineWebSession {
-        let mut args = self.into_page_args().unwrap();
-        args.enable_javascript(true);
+    pub fn open_session(&mut self, boot_mode: Visibility) -> Result<WebSession, OsError> {
+        self.javascript(true);
+
+        let mut args = self.into_page_args()?;
         args.set_boot_mode(boot_mode);
 
         let session = OfflineWebSession::new();
@@ -234,7 +288,7 @@ impl<'a> Webpage<'a> {
             TryWaitSystemEvent(&system_evt);
          }
 
-         session
+        Ok(WebSession(session))
     }
 
     pub fn open(&mut self) -> Result<PageResult, OsError> {
