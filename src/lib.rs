@@ -34,7 +34,7 @@ impl WebSession {
     
         if let Some(size) = self.inner_recv(&mut buffer) {
             if size != 0 {
-                buffer.truncate(size);
+                buffer.truncate(size - 1);
                 buffer.shrink_to_fit();
                 String::from_utf8(buffer).map(|string| string).ok()
             } else {
