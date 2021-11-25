@@ -1,73 +1,25 @@
 #![feature(new_uninit)]
 
-use std::fs;
+use std::collections::HashMap;
 use std::ffi::CStr;
+use std::fs;
+use std::num::NonZeroU32;
 use std::path::Path;
 use std::str::Utf8Error;
-use std::num::NonZeroU32;
-use std::collections::HashMap;
 
 use skyline::info::get_program_id;
 
-use nnsdk::web::*;
 use nnsdk::web::offlinewebsession::*;
-use skyline::nn::os::{ SystemEventType, SystemEventClearMode, TryWaitSystemEvent };
+use nnsdk::web::*;
+use skyline::nn::os::{SystemEventClearMode, SystemEventType, TryWaitSystemEvent};
 
 pub use nnsdk::web::{
-    WebSessionBootMode as Visibility,
-    OfflineBackgroundKind as Background,
-    OfflineBootDisplayKind as BootDisplay,
-    offlinewebsession::{
-        OfflineWebSession,
-    }
+    offlinewebsession::OfflineWebSession, OfflineBackgroundKind as Background,
+    OfflineBootDisplayKind as BootDisplay, WebSessionBootMode as Visibility,
 };
 
-pub struct WebSession(OfflineWebSession);
-
-impl WebSession {
-    pub fn recv(&self) {
-
-    }
-
-    pub fn try_recv(&self) -> Option<String> {
-        let mut buffer = vec![0u8;0x10000];
-    
-        if let Some(size) = self.inner_recv(&mut buffer) {
-            if size != 0 {
-                buffer.truncate(size - 1);
-                buffer.shrink_to_fit();
-                String::from_utf8(buffer).map(|string| string).ok()
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
-    fn inner_recv<T: AsMut<[u8]>>(&self, buffer: &mut T) -> Option<usize> {        
-        let buffer = buffer.as_mut();
-        let mut out_size = 0;
-        
-        unsafe { 
-            if skyline::nn::web::offlinewebsession::TryReceiveContentMessage(&self.0, &mut out_size, buffer.as_mut_ptr(), buffer.len()) != false {
-                Some(out_size)
-            } else {
-                None
-            }
-        }
-    }
-
-    pub fn show(&self) {
-        unsafe { Appear(&self.0) };
-    }
-
-    pub fn wait_for_exit(&self) -> PageResult {
-        let return_value = PageResult::new();
-        unsafe { WaitForExit(&self.0, return_value.as_ref()) };
-        return_value
-    }
-}
+mod session;
+pub use session::WebSession;
 
 pub struct PageResult {
     ret: Box<OfflineHtmlPageReturnValue>,
@@ -86,7 +38,7 @@ impl PageResult {
     }
 
     pub fn get_last_url(&self) -> Result<&str, Utf8Error> {
-        unsafe { 
+        unsafe {
             let last_url = GetLastUrl(self.ret.as_ref());
             CStr::from_ptr(last_url as _).to_str()
         }
@@ -152,8 +104,9 @@ impl<'a> Webpage<'a> {
 
     /// Add a single file to the context of the webpage
     pub fn file<S, D>(&mut self, name: &'a S, data: &'a D) -> &mut Self
-        where S: AsRef<str> + ?Sized + 'a,
-              D: AsRef<[u8]> + ?Sized + 'a,
+    where
+        S: AsRef<str> + ?Sized + 'a,
+        D: AsRef<[u8]> + ?Sized + 'a,
     {
         self.files.insert(name.as_ref(), data.as_ref());
 
@@ -161,19 +114,21 @@ impl<'a> Webpage<'a> {
     }
 
     pub fn files<Str, Data, Arr>(&mut self, files: &'a Arr) -> &mut Self
-    where Str: AsRef<str> + Sized + 'a,
-          Data: AsRef<[u8]> + Sized + 'a,
-          Arr: AsRef<[(Str, Data)]> + ?Sized + 'a
+    where
+        Str: AsRef<str> + Sized + 'a,
+        Data: AsRef<[u8]> + Sized + 'a,
+        Arr: AsRef<[(Str, Data)]> + ?Sized + 'a,
     {
         for (name, data) in files.as_ref().into_iter() {
             self.files.insert(name.as_ref(), data.as_ref());
         }
-        
+
         self
     }
 
     pub fn with_dir<P>(&mut self, dir_path: &'a P) -> &mut Self
-        where P: AsRef<Path> + ?Sized + 'a
+    where
+        P: AsRef<Path> + ?Sized + 'a,
     {
         self.dir = Some(dir_path.as_ref());
 
@@ -223,7 +178,8 @@ impl<'a> Webpage<'a> {
     }
 
     pub fn start_page<S>(&mut self, path: &'a S) -> &mut Self
-        where S: AsRef<str> + ?Sized + 'a
+    where
+        S: AsRef<str> + ?Sized + 'a,
     {
         self.show = Some(path.as_ref());
 
@@ -231,7 +187,8 @@ impl<'a> Webpage<'a> {
     }
 
     pub fn htdocs_dir<S>(&mut self, path: &'a S) -> &mut Self
-        where S: AsRef<str> + ?Sized + 'a
+    where
+        S: AsRef<str> + ?Sized + 'a,
     {
         self.htdocs_dir = Some(path.as_ref());
 
@@ -262,7 +219,7 @@ impl<'a> Webpage<'a> {
             htdocs_dir,
             self.show.unwrap_or("index.html")
         ));
-        
+
         args.set_background_kind(self.background);
         args.set_boot_display_kind(self.boot_display);
         args.enable_javascript(self.javascript);
@@ -273,7 +230,7 @@ impl<'a> Webpage<'a> {
 
         Ok(args)
     }
-    
+
     pub fn open_session(&mut self, boot_mode: Visibility) -> Result<WebSession, OsError> {
         self.javascript(true);
 
@@ -286,7 +243,7 @@ impl<'a> Webpage<'a> {
         unsafe {
             Start(&session, &&system_evt, &args);
             TryWaitSystemEvent(&system_evt);
-         }
+        }
 
         Ok(WebSession(session))
     }
@@ -295,31 +252,32 @@ impl<'a> Webpage<'a> {
         let mut args = self.into_page_args().unwrap();
         let mut page_result = PageResult::new();
 
-        let result = unsafe  { ShowOfflineHtmlPage(page_result.as_mut(), args.as_mut()) };
+        let result = unsafe { ShowOfflineHtmlPage(page_result.as_mut(), args.as_mut()) };
 
         match result {
             0 => Ok(page_result),
-            err => Err(OsError(NonZeroU32::new(err).unwrap()))
+            err => Err(OsError(NonZeroU32::new(err).unwrap())),
         }
     }
 }
 
 fn new_boxed_html_page_arg<T>(page_path: T) -> Box<ShowOfflineHtmlPageArg>
-    where T: AsRef<[u8]>,
+where
+    T: AsRef<[u8]>,
 {
     let mut path_bytes = page_path.as_ref().to_vec();
 
-        if path_bytes.len() > 3072 {
-            path_bytes.truncate(3071);
-        }
+    if path_bytes.len() > 3072 {
+        path_bytes.truncate(3071);
+    }
 
-        path_bytes.push(b'\0');
+    path_bytes.push(b'\0');
 
-        unsafe {
-            let mut instance = Box::<ShowOfflineHtmlPageArg>::new_zeroed().assume_init();
-            ShowOfflineHtmlPageArg(instance.as_mut(), path_bytes.as_ptr());
-            instance
-        }
+    unsafe {
+        let mut instance = Box::<ShowOfflineHtmlPageArg>::new_zeroed().assume_init();
+        ShowOfflineHtmlPageArg(instance.as_mut(), path_bytes.as_ptr());
+        instance
+    }
 }
 
 mod dialog;
