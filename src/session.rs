@@ -29,7 +29,7 @@ impl WebSession {
 
     /// Blocks until a message is recieved
     ///
-    /// Up to 4 KiB in size, for larger or more efficient sizes use [`recv_max`]
+    /// Up to 4 KiB in size, for larger or more efficient sizes use `recv_max`
     pub fn recv(&self) -> String {
         self.recv_max(0x10000)
     }
@@ -53,7 +53,7 @@ impl WebSession {
 
     /// Attempts to recieve a message without blocking
     ///
-    /// Up to 4 KiB in size, for larger or more efficient sizes use [`try_recv_max`]
+    /// Up to 4 KiB in size, for larger or more efficient sizes use `try_recv_max`
     pub fn try_recv(&self) -> Option<String> {
         self.try_recv_max(0x10000)
     }
