@@ -106,3 +106,45 @@ impl WebSession {
         return_value
     }
 }
+
+#[cfg(feature = "json")]
+use serde::{de::DeserializeOwned, Serialize};
+
+#[cfg(feature = "json")]
+impl WebSession {
+    /// Send a type as a JSON value, blocking until it sends
+    pub fn send_json<T: Serialize>(&self, obj: &T) {
+        self.send(&serde_json::to_string(obj).unwrap())
+    }
+
+    /// Attempt to send a type as a JSON value, returning false if it doesn't succeed
+    pub fn try_send_json<T: Serialize>(&self, obj: &T) -> bool {
+        self.try_send(&serde_json::to_string(obj).unwrap())
+    }
+
+    /// Receive a given type as a JSON message, blocking until one is ready
+    pub fn recv_json<T: DeserializeOwned>(&self) -> serde_json::Result<T> {
+        serde_json::from_str(&self.recv())
+    }
+
+    /// Receive a given type as a JSON message, returning None if a message is not ready
+    pub fn try_recv_json<T: DeserializeOwned>(&self) -> Option<serde_json::Result<T>> {
+        self.try_recv().map(|msg| serde_json::from_str(&msg))
+    }
+
+    /// Receive a given type as a JSON message, blocking until one is ready, setting a custom max
+    /// payload size.
+    pub fn recv_json_max<T: DeserializeOwned>(&self, max_size: usize) -> serde_json::Result<T> {
+        serde_json::from_str(&self.recv_max(max_size))
+    }
+
+    /// Receive a given type as a JSON message, returning None if a message is not ready, with a
+    /// max message size of `max_size`
+    pub fn try_recv_json_max<T: DeserializeOwned>(
+        &self,
+        max_size: usize,
+    ) -> Option<serde_json::Result<T>> {
+        self.try_recv_max(max_size)
+            .map(|msg| serde_json::from_str(&msg))
+    }
+}
