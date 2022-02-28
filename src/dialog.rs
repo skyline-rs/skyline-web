@@ -55,7 +55,8 @@ impl Dialog {
         match response.get_last_url().unwrap() {
             "http://localhost/left" => DialogOption::Left,
             "http://localhost/right" => DialogOption::Right,
-            _ => panic!("Invalid last url for dialog")
+            // Until this is reworked to offer a default option on forceful closure
+            _ => DialogOption::Right
         } 
     }
 }
