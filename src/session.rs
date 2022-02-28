@@ -8,6 +8,11 @@ pub use nnsdk::web::{
     OfflineBootDisplayKind as BootDisplay, WebSessionBootMode as Visibility,
 };
 
+extern "C" {
+    #[link_name = "\u{1}_ZN2nn3web17OfflineWebSession11RequestExitEv"]
+    pub fn request_exit(session: &OfflineWebSession);
+}
+
 pub struct WebSession(pub(crate) OfflineWebSession);
 
 impl WebSession {
@@ -105,7 +110,14 @@ impl WebSession {
         unsafe { WaitForExit(&self.0, return_value.as_ref()) };
         return_value
     }
+
+    // Exit the browser forcefully
+    pub fn exit(&self) {
+        unsafe { request_exit(&self.0); }
+    }
 }
+
+
 
 #[cfg(feature = "json")]
 use serde::{de::DeserializeOwned, Serialize};
