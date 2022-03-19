@@ -48,7 +48,7 @@ impl Dialog {
     pub fn ok_cancel<S: Into<String>>(message: S) -> bool {
         match Dialog::new(message, "Ok", "Cancel").show() {
             DialogOption::Left => true,
-            DialogOption::Right => false
+            DialogOption::Right => false,
             DialogOption::Default => false
         }
     }
