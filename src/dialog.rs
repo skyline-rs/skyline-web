@@ -12,7 +12,8 @@ pub struct Dialog {
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum DialogOption {
     Left,
-    Right
+    Right,
+    Default
 }
 
 impl Dialog {
@@ -27,11 +28,20 @@ impl Dialog {
             right_button: right_button.into()
         }
     }
-
+    
+    pub fn no_yes<S: Into<String>>(message: S) -> bool {
+        match Dialog::new(message, "No", "Yes").show() {
+            DialogOption::Left => false,
+            DialogOption::Right => true,
+            DialogOption::Default => false
+        }
+    }
+    
     pub fn yes_no<S: Into<String>>(message: S) -> bool {
         match Dialog::new(message, "Yes", "No").show() {
             DialogOption::Left => true,
-            DialogOption::Right => false
+            DialogOption::Right => false,
+            DialogOption::Default => false
         }
     }
     
@@ -39,6 +49,7 @@ impl Dialog {
         match Dialog::new(message, "Ok", "Cancel").show() {
             DialogOption::Left => true,
             DialogOption::Right => false
+            DialogOption::Default => false
         }
     }
 
@@ -56,7 +67,7 @@ impl Dialog {
             "http://localhost/left" => DialogOption::Left,
             "http://localhost/right" => DialogOption::Right,
             // Until this is reworked to offer a default option on forceful closure
-            _ => DialogOption::Right
+            _ => DialogOption::Default
         } 
     }
 }
