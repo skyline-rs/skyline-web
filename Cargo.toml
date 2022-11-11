@@ -1,7 +1,9 @@
 [package]
 name = "skyline-web"
+description = "Utility crate to generate web pages and open the web browser for game modding on Nintendo Switch"
+license = "MIT"
 version = "0.1.0"
-authors = ["Raytwo <raytwost@gmail.com>"]
+authors = ["jam1garner <jam1.mcleod@hotmail.com>", "Raytwo <raytwost@gmail.com>"]
 edition = "2018"
 
 [dependencies]
