@@ -211,7 +211,9 @@ impl<'a> Webpage<'a> {
         }
 
         for (path, data) in self.files.iter() {
-            fs::write(folder_path.join(path), data).unwrap();
+            let file_path = folder_path.join(path);
+            fs::create_dir_all(file_path.parent().unwrap()).unwrap();
+            fs::write(file_path, data).unwrap();
         }
 
         let mut args = new_boxed_html_page_arg(format!(
