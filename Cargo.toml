@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 skyline = "0.2.1"
-nnsdk = "0.2.1"
+nnsdk = "0.3"
 ramhorns = "0.9.4"
 
 # web session json
