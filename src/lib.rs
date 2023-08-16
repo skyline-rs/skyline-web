@@ -286,8 +286,6 @@ where
 }
 
 pub mod dialog;
-pub use dialog::*;
 pub mod dialog_ok;
-pub use dialog_ok::*;
 pub extern crate ramhorns;
 pub use ramhorns::*;

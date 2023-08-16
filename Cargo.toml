@@ -7,7 +7,7 @@ authors = ["jam1garner <jam1.mcleod@hotmail.com>", "Raytwo <raytwost@gmail.com>"
 edition = "2018"
 
 [dependencies]
-skyline = "0.2.1"
+skyline = { git = "https://github.com/ultimate-research/skyline-rs" }
 nnsdk = "0.3"
 ramhorns = "0.9.4"
 
