@@ -2,12 +2,12 @@
 name = "skyline-web"
 description = "Utility crate to generate web pages and open the web browser for game modding on Nintendo Switch"
 license = "MIT"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["jam1garner <jam1.mcleod@hotmail.com>", "Raytwo <raytwost@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-skyline = { git = "https://github.com/ultimate-research/skyline-rs" }
+skyline = "0.2.1"
 nnsdk = "0.3"
 ramhorns = "0.9.4"
 
