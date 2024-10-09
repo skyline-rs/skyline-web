@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 skyline = { git = "https://github.com/ultimate-research/skyline-rs" }
-nnsdk = "0.3"
+nnsdk = { git = "https://github.com/ultimate-research/nnsdk-rs" }
 ramhorns = "0.9.4"
 
 # web session json
