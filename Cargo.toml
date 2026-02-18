@@ -7,8 +7,8 @@ authors = ["jam1garner <jam1.mcleod@hotmail.com>", "Raytwo <raytwost@gmail.com>"
 edition = "2018"
 
 [dependencies]
-skyline = { git = "https://github.com/ultimate-research/skyline-rs" }
-nnsdk = { git = "https://github.com/ultimate-research/nnsdk-rs" }
+skyline = "0.6"
+nnsdk = "0.6"
 ramhorns = "0.9.4"
 
 # web session json
