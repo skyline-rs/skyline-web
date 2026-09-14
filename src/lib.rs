@@ -12,7 +12,7 @@ use skyline::info::get_program_id;
 
 use nnsdk::web::offlinewebsession::*;
 use nnsdk::web::*;
-use skyline::nn::os::{SystemEventClearMode, SystemEventType, TryWaitSystemEvent};
+use skyline::nn::os::SystemEventType;
 
 pub use nnsdk::web::{
     offlinewebsession::OfflineWebSession, OfflineBackgroundKind as Background,
@@ -244,11 +244,12 @@ impl<'a> Webpage<'a> {
         args.set_boot_mode(boot_mode);
 
         let session = OfflineWebSession::new();
-        let system_evt = SystemEventType::new(SystemEventClearMode::Manual);
+
+        let placeholder = SystemEventType { _unused: [0; 0x29] };
+        let mut message_event: &SystemEventType = &placeholder;
 
         unsafe {
-            Start(&session, &&system_evt, &args);
-            TryWaitSystemEvent(&system_evt);
+            Start(&session, &mut message_event, &args);
         }
 
         Ok(WebSession(session))
